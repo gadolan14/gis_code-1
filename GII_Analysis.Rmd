@@ -1,0 +1,101 @@
+---
+title: "Global Gender Inequality Analysis"
+author: "Yang Han"
+date: "2026-11-05"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+## Load packages
+
+```{r packages}
+library(sf)
+library(dplyr)
+library(readr)
+library(ggplot2)
+```
+  ## Load GII Data
+
+```{r load-data}
+gii_data <- read_csv("data/HDR25_Composite_indices_complete_time_series.csv")
+
+head(gii_data)
+```
+## Calculate GII Change
+
+```{r calculate-gii-change}
+gii_selected <- gii_data %>%
+  select(iso3, country, gii_2010, gii_2019) %>%
+  mutate(gii_change = gii_2019 - gii_2010)
+
+head(gii_selected)
+```
+## Join GII Data with World Map
+
+```{r join-world-data}
+library(rnaturalearth)
+
+world <- ne_countries(
+  scale = "medium",
+  returnclass = "sf"
+)
+
+world_gii <- world %>%
+  left_join(
+    gii_selected,
+    by = c("iso_a3" = "iso3")
+  )
+
+sum(!is.na(world_gii$gii_change))
+```
+
+## Map of Global GII Change
+
+```{r gii-map}
+ggplot(world_gii) +
+  geom_sf(aes(fill = gii_change),
+          color = "white",
+          linewidth = 0.1) +
+  scale_fill_gradient2(
+    low = "#2166ac",
+    mid = "white",
+    high = "#b2182b",
+    midpoint = 0,
+    na.value = "grey85",
+    name = "GII Change"
+  ) +
+  labs(
+    title = "Global Changes in Gender Inequality (2010–2019)",
+    subtitle = "Change in GII = 2019 value - 2010 value",
+    caption = "Source: UNDP Human Development Report 2025"
+  ) +
+  theme_minimal()
+```
+<WritingBlock id="58321" variant="standard">## Interpretation
+
+The map shows changes in the Gender Inequality Index (GII) between 2010 and 2019. Negative values indicate a reduction in gender inequality, while positive values indicate an increase. Among the countries represented in the spatial dataset, 152 have valid GII change values. Countries with missing data are shown in grey.
+
+The results suggest that gender inequality declined in many countries during this period, although the magnitude of change varies geographically.</WritingBlock>
