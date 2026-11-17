@@ -33,6 +33,7 @@ Note that the `echo = FALSE` parameter was added to the code chunk to prevent pr
 
 ```{r packages}
 library(sf)
+library(tidyverse)
 library(dplyr)
 library(readr)
 library(ggplot2)
@@ -40,7 +41,7 @@ library(ggplot2)
   ## Load GII Data
 
 ```{r load-data}
-gii_data <- read_csv("data/HDR25_Composite_indices_complete_time_series.csv")
+gii_data <- read_csv("HDR25_Composite_indices_complete_time_series.csv")
 
 head(gii_data)
 ```
@@ -99,3 +100,14 @@ ggplot(world_gii) +
 The map shows changes in the Gender Inequality Index (GII) between 2010 and 2019. Negative values indicate a reduction in gender inequality, while positive values indicate an increase. Among the countries represented in the spatial dataset, 152 have valid GII change values. Countries with missing data are shown in grey.
 
 The results suggest that gender inequality declined in many countries during this period, although the magnitude of change varies geographically.</WritingBlock>
+```{r}
+library(tmap)
+tmap_mode("plot")
+map1 <- tm_shape(world_gii) +
+  tm_polygons(fill = "gii_change", col = "black", lwd=0.5, lty="solid", fill.scale = tm_scale_intervals(values = "matplotlib.yl_gn_bu", n=5,                  style="jenks"),
+              fill.legend = tm_legend(title = "GII Change", position=tm_pos_out("right", "center", pos.v="center"))) +
+  tm_credits ("Source: UNDP Human Development Report 2025", size = 0.7, position = tm_pos_out("center", "bottom")) +
+  tm_title("Global Gender Inequality Change 2010-2019", size = 1.00, position = tm_pos_out("center", "top"))
+map1
+```
+
